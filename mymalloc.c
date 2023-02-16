@@ -10,12 +10,9 @@ static char memory[4096];
 //linked list to have all information of each chunk of data. 
 struct mallocLL{
     size_t size;
-
+    bool isFreed;//t/f based on wther free or not
+    struct mallocLL *next; 
 };
-
-
-void malloc();
-void free();
 
 //coalences when we free.
 
