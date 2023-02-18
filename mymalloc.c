@@ -34,7 +34,7 @@ malloc() function will return pointers to this large array
 void *mymalloc(size_t size, char *file, int line){
     //if it hasn't been initialized before
     if (checkMalloc){
-        headBlock = MEMSIZE - sizeof(struct mallocLL);
+        headBlock = (struct mallocLL *)(MEMSIZE - sizeof(struct mallocLL));
         headBlock -> isFreed = 1;
         //set next block equal to NULL
         headBlock->next = NULL;
@@ -43,7 +43,7 @@ void *mymalloc(size_t size, char *file, int line){
     //set equal to the head block
     struct mallocLL *temp = headBlock;
     //holds the prev value as we traverse through the LL 
-    struct mallocLL *prev = NULL;
+    //struct mallocLL *prev = NULL;
     
     // If the block of memory is bigger than what we need, split it into two blocks.
     while(temp!=NULL){
@@ -59,16 +59,13 @@ void *mymalloc(size_t size, char *file, int line){
                 
                 temp->next = newChunk; 
             }
-            else{
                 temp->isFreed= 0;
                 
                 return (void*)(temp + 1);
-            }
-            //countrol function for LL
-            temp = temp->next;
         }
-        return NULL;
+            temp = temp->next;
     }
+        return NULL;
 }
 
 /*The free(void *ptr) function informs the operating system that you are 
@@ -81,13 +78,17 @@ can be reclaimed and used for other purposes.
 void myfree(void *ptr, char *file, int line){
     //preliminary check the pointer's value... 
     if (ptr==NULL){
-        //
+        //error statement unitialized memory
+        fprintf(stderr,"Error - %s:%d#: free uninitialized memory\n", file, line);
         return; 
     }
+
     //header block to be freed in which we can find by subtracting 1. 
     struct mallocLL *headerB= (struct mallocLL*) ptr-1;
     //checking if already freed or not
     if(headerB->isFreed){
+        //error -Calling free() a second time on the same pointer. 
+        fprintf(stderr, "Error - %s:%d#: Trying to free a second time on the same pointer\n", file, line);
         return;
     }
     headerB -> isFreed = 1;
@@ -113,3 +114,11 @@ void myfree(void *ptr, char *file, int line){
         headBlock = (struct mallocLL*)((char*)headerB-sizeof(struct mallocLL));
     }
 }
+
+//memory leak error catch
+// void memeoryLeakage(){
+//     struct mallocLL *tempNode = headBlock;
+//     while(tempNode){
+        
+//     }
+// }
