@@ -27,6 +27,7 @@ static int checkMalloc= 1;
 int main(){
     return 0; 
 }
+//test
 
 /*malloc(size_t size) is a system library function that returns a pointer to a block of 
 memory of at least the requested size. This memory comes from a main memory resource managed
