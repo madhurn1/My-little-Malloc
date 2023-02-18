@@ -6,6 +6,8 @@
 #define MEMSIZE 4096
 static char memory[4096];
 
+// header * first_header = (header *) &memory[0];
+
 //linked list to have all information of each chunk of data. 
 struct mallocLL{
     size_t size;
@@ -74,7 +76,6 @@ reclaim it for other uses.
 free function will let your code know that a previously-allocated region 
 can be reclaimed and used for other purposes.
 */
-
 void myfree(void *ptr, char *file, int line){
     //preliminary check the pointer's value... 
     if (ptr==NULL){
