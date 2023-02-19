@@ -42,13 +42,18 @@ void *mymalloc(size_t size, char *file, int line){
     //set equal to the head block
     struct mallocLL *temp = headBlock;
     //holds the prev value as we traverse through the LL 
-    //struct mallocLL *prev = NULL;
+    struct mallocLL *prev = NULL;
     
     // If the block of memory is bigger than what we need, split it into two blocks.
     while(temp!=NULL){
         if(temp->size >=size && temp->isFreed){
             if (temp->size >= size + sizeof(struct mallocLL)) {
-                struct mallocLL *newChunk = (void*)((void*)temp + sizeof(struct mallocLL) + size);
+                struct mallocLL *newChunk = (struct mallocLL*)((char*)temp + sizeof(struct mallocLL) + size);
+                /*calculate the size of the new free chunk is simply the size of the current chunk, minus the size of the payload being allocated, 
+                minus the size of the header that will be used for the new allocated chunk.
+                */
+                newChunk -> size = temp->size - sizeof(struct mallocLL) - size;
+                
                 //initalize the characteristics
                 newChunk ->isFreed=1;
                 //point to the next linklist element
@@ -62,9 +67,12 @@ void *mymalloc(size_t size, char *file, int line){
                 
                 return (void*)(temp + 1);
         }
+            prev = temp;    
             temp = temp->next;
     }
-        return NULL;
+
+    fprintf(stderr,"Error - %s:%d#: Not enough Memory\n", file, line);
+    return NULL;
 }
 
 /*The free(void *ptr) function informs the operating system that you are 
@@ -108,7 +116,9 @@ void myfree(void *ptr, char *file, int line){
     block, it means that the two blocks are contiguous in memory and can be merged.
     */
     if(headerB!=headBlock && headerB->isFreed && ((char*)headerB-sizeof(struct mallocLL)-(char*)headBlock == headBlock->size)){
+        
         headBlock->size +=sizeof(struct mallocLL)+headerB->size;
+
         headBlock = (struct mallocLL*)((char*)headerB-sizeof(struct mallocLL));
     }
 }
@@ -116,7 +126,7 @@ void myfree(void *ptr, char *file, int line){
 //memory leak error catch
 // void memeoryLeakage(){
 //     struct mallocLL *tempNode = headBlock;
-//     while(tempNode){
+//     while(tempNode!=NULL){
         
 //     }
 // }
