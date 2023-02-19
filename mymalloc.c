@@ -14,12 +14,11 @@ struct mallocLL{
 
 //first value ? Not sure
 //struct mallocLL *headBlock = (struct mallocLL*) & memory[0];
-struct mallocLL *headBlock = (void*) memory;
+struct mallocLL *headBlock = (struct mallocLL*) memory;
 
 //mymalloc call status
 static int checkMalloc= 1; 
 
-//coalences when we free.
 
 int main(){
     return 0; 
