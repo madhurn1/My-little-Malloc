@@ -1,17 +1,14 @@
 #include<stdio.h>
 #include<stdlib.h>
-#include<stdbool.h>
 #include"mymalloc.h"
 
 #define MEMSIZE 4096
 static char memory[4096];
 
-// header * first_header = (header *) &memory[0];
-
 //linked list to have all information of each chunk of data. 
 struct mallocLL{
     size_t size;
-    bool isFreed;//t/f based on wther free or not
+    int isFreed;// wther free or not
     struct mallocLL *next; //linked list data structure. 
 };
 
@@ -124,3 +121,8 @@ void myfree(void *ptr, char *file, int line){
         
 //     }
 // }
+
+
+//need a get size method
+
+
