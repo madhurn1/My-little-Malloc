@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
-#include"mymalloc.h"
+#include <stddef.h>
+#include "mymalloc.h"
 
 #define MEMSIZE 4096
 static char memory[4096];
@@ -13,7 +14,6 @@ struct mallocLL{
 };
 
 //first value ? Not sure
-//struct mallocLL *headBlock = (struct mallocLL*) & memory[0];
 struct mallocLL *headBlock = (struct mallocLL*) memory;
 
 //mymalloc call status
@@ -33,7 +33,7 @@ malloc() function will return pointers to this large array
 void *mymalloc(size_t size, char *file, int line){
     //if it hasn't been initialized before
     if (checkMalloc){
-        headBlock = (struct mallocLL *)(MEMSIZE - sizeof(struct mallocLL));
+        headBlock ->size = MEMSIZE - sizeof(struct mallocLL);//look into this.
         headBlock -> isFreed = 1;
         //set next block equal to NULL
         headBlock->next = NULL;
@@ -53,7 +53,7 @@ void *mymalloc(size_t size, char *file, int line){
                 minus the size of the header that will be used for the new allocated chunk.
                 */
                 newChunk -> size = temp->size - sizeof(struct mallocLL) - size;
-                
+
                 //initalize the characteristics
                 newChunk ->isFreed=1;
                 //point to the next linklist element
@@ -124,12 +124,17 @@ void myfree(void *ptr, char *file, int line){
 }
 
 //memory leak error catch
-// void memeoryLeakage(){
-//     struct mallocLL *tempNode = headBlock;
-//     while(tempNode!=NULL){
-        
-//     }
-// }
+
+void memoryLeakage(){
+    struct mallocLL *tempNode = headBlock;
+    while(tempNode!=NULL){
+        //if 
+        if(!tempNode->isFreed){
+        fprintf(stderr, "Error at address %p and  size of %zu\n: Memory Leakage \n",(void*)(tempNode + 1),tempNode->size );
+        }
+        tempNode = tempNode ->next; 
+    }
+}
 
 
 //need a get size method

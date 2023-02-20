@@ -4,12 +4,11 @@
 #define malloc(s)   mymalloc(s, __FILE__, __LINE__)
 #define free(p)     myfree(p, __FILE__, __LINE__)
 
-#include<stddef.h>
 
 void *mymalloc(size_t size, char *file, int line);
 void myfree(void *ptr, char *file, int line);
 //void getSize();
-//void memoryLeakage();
+void memoryLeakage();
 
 #endif
 
