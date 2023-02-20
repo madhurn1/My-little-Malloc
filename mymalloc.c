@@ -4,12 +4,12 @@
 #include "mymalloc.h"
 
 #define MEMSIZE 4096
-static char memory[4096];
+static char memory[MEMSIZE];
 
 //linked list to have all information of each chunk of data. 
 struct mallocLL{
     size_t size;
-    int isFreed;// wther free or not
+    int isFreed;// indicated whether the block has been freed or not. 
     struct mallocLL *next; //linked list data structure. 
 };
 
@@ -33,9 +33,14 @@ malloc() function will return pointers to this large array
 void *mymalloc(size_t size, char *file, int line){
     //if it hasn't been initialized before
     if (checkMalloc){
-        headBlock ->size = MEMSIZE - sizeof(struct mallocLL);//look into this.
-        headBlock -> isFreed = 1;
-        //set next block equal to NULL
+        /*struct mallocll the size of the metadata structure that is used to keep track of each 
+        block of allocated memory. By subtracting the size of this metadata from the total 
+        heap size, the remaining 
+        amount of memory available for allocation is obtained
+        */
+       //sizeof(struct mallocLL)
+        headBlock ->size = MEMSIZE - sizeof(struct mallocLL);//look into this. subtract 4?
+        headBlock -> isFreed = 1;//check this
         headBlock->next = NULL;
         checkMalloc = 0;
     }

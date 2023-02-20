@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 #include "mymalloc.h"
 
 // Allocates 1 byte 120 times
@@ -143,6 +144,7 @@ int main()
     avgtime = 0;
 
     for (int i = 0; i < 50; i++)
+    
     {
         start = clock();
         test4();
