@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <string.h>
 #include "mymalloc.h"
@@ -18,12 +19,12 @@ void test1()
 // Allocates 4096 bytes 1 time
 void test2()
 {
-    void *arr[4096] = malloc(4096);
+    void *arr[0] = malloc(4096);
     free(arr);
 }
 
 // Allocates objects with distinct byte patterns
-void test3()
+int test3()
 {
     // Allocate memory for the objects
     void *arr[4];
@@ -63,10 +64,12 @@ void test3()
     // Free memory for the objects
     for (int i = 0; i < 4; i++)
         free(arr[i]);
+
+    return 0;
 }
 
 // Coelesces adjacent free blocks
-void test4()
+int test4()
 {
     void *arr[4];
     for (int i = 0; i < 4; i++)
@@ -86,10 +89,7 @@ void test4()
     // Allocate a new block to try to fill the hole left by the freed blocks
     void *new = malloc(2000);
     if (new == NULL)
-    {
         printf("malloc failed\n");
-        return 1;
-    }
 
     // Check if the new block is adjacent to the remaining blocks
     for (int i = 1; i < 4; i += 2)
@@ -102,6 +102,7 @@ void test4()
     }
 
     printf("Error: adjacent free blocks were not coalesced.\n");
+    return 0;
 }
 
 int main()
