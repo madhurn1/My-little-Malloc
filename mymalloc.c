@@ -20,9 +20,9 @@ struct mallocLL *headBlock = (struct mallocLL*) memory;
 static int checkMalloc= 1; 
 
 
-int main(){
-    return 0; 
-}
+// int main(){
+//     return 0; 
+// }
 //test
 
 /*malloc(size_t size) is a system library function that returns a pointer to a block of 
@@ -42,7 +42,7 @@ void *mymalloc(size_t size, char *file, int line){
     //set equal to the head block
     struct mallocLL *temp = headBlock;
     //holds the prev value as we traverse through the LL 
-    struct mallocLL *prev = NULL;
+    // struct mallocLL *prev = NULL;
     
     // If the block of memory is bigger than what we need, split it into two blocks.
     while(temp!=NULL){
@@ -67,10 +67,9 @@ void *mymalloc(size_t size, char *file, int line){
                 
                 return (void*)(temp + 1);
         }
-            prev = temp;    
+            // prev = temp;    
             temp = temp->next;
     }
-
     fprintf(stderr,"Error - %s:%d#: Not enough Memory\n", file, line);
     return NULL;
 }
@@ -89,7 +88,7 @@ void myfree(void *ptr, char *file, int line){
         return; 
     }
 
-    //header block to be freed in which we can find by subtracting 1. 
+    //header block to be freed in which we can found by subtracting 1. 
     struct mallocLL *headerB= (struct mallocLL*) ptr-1;
     //checking if already freed or not
     if(headerB->isFreed){
@@ -135,8 +134,4 @@ void memoryLeakage(){
         tempNode = tempNode ->next; 
     }
 }
-
-
-//need a get size method
-
 
