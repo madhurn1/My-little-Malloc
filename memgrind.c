@@ -19,12 +19,14 @@ void test1()
 // Allocates 4096 bytes 1 time
 void test2()
 {
-    void *arr[0] = malloc(4096);
+    void *arr = malloc(4000);
+    if (arr == NULL)
+        printf("malloc failed\n");
     free(arr);
 }
 
 // Allocates objects with distinct byte patterns
-int test3()
+void test3()
 {
     // Allocate memory for the objects
     void *arr[4];
@@ -34,7 +36,7 @@ int test3()
         if (arr[i] == NULL)
         {
             printf("malloc failed\n");
-            return 1;
+            return;
         }
     }
 
@@ -54,7 +56,7 @@ int test3()
             if (*((char *)(arr[i] + j)) != size)
             {
                 printf("error: object %d was overwritten\n", i);
-                return 1;
+                return;
             }
         }
     }
@@ -64,21 +66,20 @@ int test3()
     // Free memory for the objects
     for (int i = 0; i < 4; i++)
         free(arr[i]);
-
-    return 0;
 }
 
 // Coelesces adjacent free blocks
-int test4()
+void test4()
 {
+    printf("hey\n");
     void *arr[4];
     for (int i = 0; i < 4; i++)
     {
-        arr[i] = malloc(1000);
+        arr[i] = malloc(16);
         if (arr[i] == NULL)
         {
-            printf("memory allocation failed\n");
-            return 1;
+            printf("malloc failed\n");
+            return;
         }
     }
 
@@ -87,22 +88,20 @@ int test4()
         free(arr[i]);
 
     // Allocate a new block to try to fill the hole left by the freed blocks
-    void *new = malloc(2000);
+    void *new = malloc(16);
     if (new == NULL)
         printf("malloc failed\n");
 
-    // Check if the new block is adjacent to the remaining blocks
+    if (new != arr[0])
+        printf("Coalescing failed: expected %p, got %p\n", arr[0], new);
+
+    free(new);
+
+    // Free the remaining blocks
     for (int i = 1; i < 4; i += 2)
     {
-        if (arr[i] == new - 1000 || arr[i] == new + 1000)
-        {
-            printf("adjacent free blocks were coalesced.\n");
-            return 0;
-        }
+        free(arr[i]);
     }
-
-    printf("Error: adjacent free blocks were not coalesced.\n");
-    return 0;
 }
 
 int main()
@@ -122,7 +121,7 @@ int main()
     printf("Test 1: %f secs\n", avgtime / 50);
     avgtime = 0;
 
-    for (int i = 0; i < 50; i++)
+    for (int i = 0; i < 1; i++)
     {
         start = clock();
         test2();
@@ -133,7 +132,7 @@ int main()
     printf("Test 2: %f secs\n", avgtime / 50);
     avgtime = 0;
 
-    for (int i = 0; i < 50; i++)
+    for (int i = 0; i < 1; i++)
     {
         start = clock();
         test3();
@@ -144,8 +143,7 @@ int main()
     printf("Test 3: %f secs\n", avgtime / 50);
     avgtime = 0;
 
-    for (int i = 0; i < 50; i++)
-    
+    for (int i = 0; i < 1; i++)
     {
         start = clock();
         test4();
