@@ -13,12 +13,22 @@ struct mallocLL{
     struct mallocLL *next; //linked list data structure. 
 };
 
-//first value ? Not sure
+//to point to the beginning of the memory array.
 struct mallocLL *headBlock = (struct mallocLL*) memory;
 
 //mymalloc call status
-static int checkMalloc= 1; 
+//static int checkMalloc= 1; 
 
+// int checkMalloc(){
+//     int checkMalloc; 
+//     if(checkMalloc=0){
+//         return 0;
+//     }
+//     else{
+//         return 1;
+//     }
+// } 
+//status 
 
 // int main(){
 //     return 0; 
@@ -31,28 +41,27 @@ by the operating system.
 malloc() function will return pointers to this large array
 */
 void *mymalloc(size_t size, char *file, int line){
+    //int checkMalloc= 1; 
+
     //if it hasn't been initialized before
-    if (checkMalloc){
-        /*struct mallocll the size of the metadata structure that is used to keep track of each 
-        block of allocated memory. By subtracting the size of this metadata from the total 
-        heap size, the remaining 
-        amount of memory available for allocation is obtained
-        */
-       //sizeof(struct mallocLL)
-        headBlock ->size = MEMSIZE - sizeof(struct mallocLL);//look into this. subtract 4?
-        headBlock -> isFreed = 1;//check this
+    if (MEMSIZE==4096){
+        headBlock ->size = MEMSIZE - sizeof(struct mallocLL);
+        headBlock -> isFreed = 0;//check this
         headBlock->next = NULL;
-        checkMalloc = 0;
+        //checkMalloc = 0;
     }
+
     //set equal to the head block
     struct mallocLL *temp = headBlock;
-    //holds the prev value as we traverse through the LL 
     // struct mallocLL *prev = NULL;
-    
     // If the block of memory is bigger than what we need, split it into two blocks.
     while(temp!=NULL){
-        if(temp->size >=size && temp->isFreed){
+        if(temp->size >=size && temp->isFreed==0){
             if (temp->size >= size + sizeof(struct mallocLL)) {
+                /*This line of code is creating a new header for the free chunk that remains after 
+                the requested memory has been allocated
+                which allows us to properly track this chunk and use it in future allocations.
+                */
                 struct mallocLL *newChunk = (struct mallocLL*)((char*)temp + sizeof(struct mallocLL) + size);
                 /*calculate the size of the new free chunk is simply the size of the current chunk, minus the size of the payload being allocated, 
                 minus the size of the header that will be used for the new allocated chunk.
@@ -61,21 +70,24 @@ void *mymalloc(size_t size, char *file, int line){
 
                 //initalize the characteristics
                 newChunk ->isFreed=1;
+                
                 //point to the next linklist element
                 newChunk->next = temp->next;
+
+                temp->isFreed = 0; 
 
                 temp->size = size;
                 
                 temp->next = newChunk; 
-            }
+            }   
                 temp->isFreed= 0;
                 
-                return (void*)(temp + 1);
+                return (void*)((char*)temp + sizeof(struct mallocLL)); //valid
         }
             // prev = temp;    
             temp = temp->next;
     }
-    fprintf(stderr,"Error - %s:%d#: Not enough Memory\n", file, line);
+    //fprintf(stderr,"Error - %s:%d#: Not enough Memory\n", file, line);
     return NULL;
 }
 
@@ -112,13 +124,12 @@ void myfree(void *ptr, char *file, int line){
 
     //previous block is free, merge both blocks...
 
-    /*This condition checks if the block of memory that was just freed, curr, is immediately 
-    before the head block in memory and if both blocks are currently free. 
-    If both conditions are true, it merges the two free blocks into one larger block.
-    calculates the distance between the end of the head block (which is the beginning of the memory array) 
-    and the beginning of the block that was just freed. If this distance is equal to the size of the head 
-    block, it means that the two blocks are contiguous in memory and can be merged.
-    */
+/*The second code snippet handles coalescing of adjacent free blocks in the 
+backward direction. It checks if the previous block before the current block is 
+ free and coalesces it with the current block if it is. This is useful for when a 
+ block is freed in the middle of the memory pool, as it allows the freed block to be 
+combined with the adjacent free blocks on either side of it.
+*/
     if(headerB!=headBlock && headerB->isFreed && ((char*)headerB-sizeof(struct mallocLL)-(char*)headBlock == headBlock->size)){
         
         headBlock->size +=sizeof(struct mallocLL)+headerB->size;
@@ -139,4 +150,3 @@ void memoryLeakage(){
         tempNode = tempNode ->next; 
     }
 }
-

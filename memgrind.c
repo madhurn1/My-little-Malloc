@@ -19,7 +19,7 @@ void test1()
 // Allocates 4096 bytes 1 time
 void test2()
 {
-    void *arr[0] = malloc(4096);
+    void *arr = malloc(4096);
     free(arr);
 }
 
@@ -111,7 +111,7 @@ int main()
     clock_t start, end;
     double avgtime;
 
-    for (int i = 0; i < 50; i++)
+    for (int i = 0; i < 1; i++)
     {
         start = clock();
         test1();
@@ -122,7 +122,7 @@ int main()
     printf("Test 1: %f secs\n", avgtime / 50);
     avgtime = 0;
 
-    for (int i = 0; i < 50; i++)
+    for (int i = 0; i < 1; i++)
     {
         start = clock();
         test2();
@@ -133,7 +133,7 @@ int main()
     printf("Test 2: %f secs\n", avgtime / 50);
     avgtime = 0;
 
-    for (int i = 0; i < 50; i++)
+    for (int i = 0; i < 1; i++)
     {
         start = clock();
         test3();
@@ -144,7 +144,7 @@ int main()
     printf("Test 3: %f secs\n", avgtime / 50);
     avgtime = 0;
 
-    for (int i = 0; i < 50; i++)
+    for (int i = 0; i < 1; i++)
     
     {
         start = clock();
