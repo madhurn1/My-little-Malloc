@@ -1,157 +1,148 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <stddef.h>
+#include <unistd.h>
+
+/********************************************************************************************************************/
+
+#include <stdio.h>
+
+/********************************************************************************************************************/
+
+#include <sys/time.h> // Defines the timeval structure to perform various functions.
 #include <time.h>
-#include <string.h>
-#include "mymalloc.h"
 
-// Allocates 1 byte 120 times
-void test1()
-{
-    void *arr[4096];
-    for (int i = 0; i < 120; i++)
-    {
-        arr[i] = malloc(1);
-        free(arr[i]);
-    }
+/********************************************************************************************************************/
+
+#include "mymalloc.h" // Contains the functions and Macros as described in p1.pdf.
+
+/********************************************************************************************************************/
+
+#define TASKSIZE 50 // Defined to run each task 50 times everytime any task is called.
+#define NUMTIMES 120 // To operate malloc and free functions 120 times on given task.
+
+/********************************************************************************************************************/
+
+double TaskCount1() { // To malloc() and immediately free() a 1-byte chunk, 120 times, repeated for 50 cycles.
+    void *ptr; struct timeval start, end; double TotalTime = 0.0;
+
+    for (int i = 0; i < TASKSIZE; i++) {
+        gettimeofday(&start, NULL);
+
+        for (int j = 0; j < NUMTIMES; j++) { ptr = malloc(1); free(ptr); }
+
+        gettimeofday(&end, NULL); // Now, calculating the total time taken do perform the task in seconds.
+        TotalTime += (double)(end.tv_sec - start.tv_sec) + ((double)(end.tv_usec - start.tv_usec) / 1000000.0);
+    
+    } return TotalTime;
 }
 
-// Allocates 4096 bytes 1 time
-void test2()
-{
-    void *arr = malloc(4000);
-    if (arr == NULL)
-        printf("malloc failed\n");
-    free(arr);
+/********************************************************************************************************************/
+
+double TaskCount2() { /* To use malloc() to get 120 1-byte chunks, storing the pointers in an array, then use free() 
+                       to deallocate the chunks. */
+    void *ptr[NUMTIMES]; struct timeval start, end; double TotalTime = 0.0;
+
+    for (int i = 0; i < TASKSIZE; i++) {
+        gettimeofday(&start, NULL);
+
+        for (int j = 0; j < NUMTIMES; j++) { ptr[j] = malloc(1); }
+        for (int j = 0; j < NUMTIMES; j++) { free(ptr[j]); }
+
+        gettimeofday(&end, NULL); // Now, calculating the total time taken do perform the task in seconds.
+        TotalTime += (double)(end.tv_sec - start.tv_sec) + ((double)(end.tv_usec - start.tv_usec) / 1000000.0);
+    
+    } return TotalTime;
 }
 
-// Allocates objects with distinct byte patterns
-void test3()
-{
-    // Allocate memory for the objects
-    void *arr[4];
-    for (int i = 0; i < 4; i++)
-    {
-        arr[i] = malloc(1000);
-        if (arr[i] == NULL)
-        {
-            printf("malloc failed\n");
-            return;
-        }
-    }
+/********************************************************************************************************************/
 
-    // Fill each object with a distinct byte pattern
-    for (int i = 0; i < 4; i++)
-    {
-        char size = i + 1;
-        memset(arr[i], size, 1000);
-    }
+double TaskCount3() { /* Randomly choose between one of the following tasks to be performed : 
+                        • Allocating a 1-byte chunk and storing the pointer in an array.
+                        • Deallocating one of the chunks in the array (if any). 
+    Repeat until you have called malloc() 120 times, then free all of the remaining allocated chunks in the array. */
+    void *ptr[NUMTIMES]; int ChunksAllocated = 0; struct timeval start, end; double TotalTime = 0.0;
 
-    // Check if each object still contains the written pattern
-    for (int i = 0; i < 4; i++)
-    {
-        char size = i + 1;
-        for (int j = 0; j < 4; j++)
-        {
-            if (*((char *)(arr[i] + j)) != size)
-            {
-                printf("error: object %d was overwritten\n", i);
-                return;
+    for (int i = 0; i < TASKSIZE; i++) {
+        gettimeofday(&start, NULL);
+
+        for (int j = 0; j < NUMTIMES; j++) {
+
+            if (ChunksAllocated == 0 || (rand() % 2 == 0 && ChunksAllocated < NUMTIMES)) {
+                ptr[ChunksAllocated] = malloc(1); ChunksAllocated++;
+            } else {
+                int idx = rand() % ChunksAllocated; // Randomly selecting a previously allocated chunk.
+                free(ptr[idx]); ChunksAllocated--; // Deallocating the randomly chosen chunk.
+                ptr[idx] = ptr[ChunksAllocated]; // Updating pointer to this index w/last pointer in 'ptr' array.
             }
         }
-    }
 
-    printf("all objects have the right pattern\n");
+        for (int j = 0; j < ChunksAllocated; j++) { free(ptr[j]); } // To free any remaining allocated chunks.
 
-    // Free memory for the objects
-    for (int i = 0; i < 4; i++)
-        free(arr[i]);
+        gettimeofday(&end, NULL); // Now, calculating the total time taken do perform the task in seconds.
+        TotalTime += (double)(end.tv_sec - start.tv_sec) + (double)(end.tv_usec - start.tv_usec) / 1000000.0;
+    
+    } return TotalTime;
 }
 
-// Coelesces adjacent free blocks
-void test4()
-{
-    printf("hey\n");
-    void *arr[4];
-    for (int i = 0; i < 4; i++)
-    {
-        arr[i] = malloc(16);
-        if (arr[i] == NULL)
-        {
-            printf("malloc failed\n");
-            return;
+/********************************************************************************************************************/
+
+double TaskCount4() { /* Instead of allocating 1-byte chunks, this stress test creates 16-byte chunks and deallocates 
+them in a sequence that releases even-numbered pieces first and odd-numbered chunks afterwards. This pattern can be 
+used to put the allocator's abilities to control memory unit fragmentation and coalescence under stress. */
+    void *ptr[NUMTIMES]; struct timeval start, end; double TotalTime = 0.0;
+
+    for (int i = 0; i < TASKSIZE; i++) {
+        gettimeofday(&start, NULL);
+
+        for (int j = 0; j < NUMTIMES; j++) { ptr[j] = malloc(16); }
+
+        for (int j = 0; j < NUMTIMES; j += 2) { free(ptr[j]); } // Freeing chunks at even places in 'ptr' array.
+        for (int j = 1; j < NUMTIMES; j += 2) { free(ptr[j]); } // Freeing chunks at odd places in 'ptr' array.
+
+        gettimeofday(&end, NULL); // Now, calculating the total time taken do perform the task in seconds.
+        TotalTime += (double)(end.tv_sec - start.tv_sec) + (double)(end.tv_usec - start.tv_usec) / 1000000.0;
+    
+    } return TotalTime;
+}
+
+/********************************************************************************************************************/
+
+double TaskCount5() { /* The allocation and deallocation of 16-byte chunks during this stress test alternates until 10 
+chunks are allocated, at which point all allocated chunks are freed. This pattern can be used to stress-test the 
+allocator's capability to manage repetitive allocations and deallocations of various sizes as well as test how it 
+responds to irregular variations in memory space. */
+    void *ptr[NUMTIMES]; int ChunksAllocated = 0; struct timeval start, end; double TotalTime = 0.0;
+
+    for (int i = 0; i < TASKSIZE; i++) {
+        gettimeofday(&start, NULL);
+
+        for (int j = 0; j < NUMTIMES; j++) { 
+            if (ChunksAllocated < 10) { ptr[ChunksAllocated] = malloc(16); ChunksAllocated++; } 
+            
+            else { // This condition checks whether 10 chunks are allocated yet or not. If yes, it frees them.
+                for (int k = 0; k < ChunksAllocated; k++) { free(ptr[k]); }
+                ChunksAllocated = 0; // Reinitializing variable to zero once we have freed all allocated chunks.
+            }
         }
-    }
 
-    // Free every other block
-    for (int i = 0; i < 4; i += 2)
-        free(arr[i]);
+        for (int j = 0; j < ChunksAllocated; j++) { free(ptr[j]); } // To free any remaining allocated chunks.
 
-    // Allocate a new block to try to fill the hole left by the freed blocks
-    void *new = malloc(16);
-    if (new == NULL)
-        printf("malloc failed\n");
-
-    if (new != arr[0])
-        printf("Coalescing failed: expected %p, got %p\n", arr[0], new);
-
-    free(new);
-
-    // Free the remaining blocks
-    for (int i = 1; i < 4; i += 2)
-    {
-        free(arr[i]);
-    }
+        gettimeofday(&end, NULL); // Now, calculating the total time taken do perform the task in seconds.
+        TotalTime += (double)(end.tv_sec - start.tv_sec) + (double)(end.tv_usec - start.tv_usec) / 1000000.0;
+    
+    } return TotalTime;
 }
 
-int main()
-{
-    srand(time(NULL));
-    clock_t start, end;
-    double avgtime;
+/********************************************************************************************************************/
 
-    for (int i = 0; i < 1; i++)
-    {
-        start = clock();
-        test1();
-        end = clock();
-        avgtime += ((double)(end - start)) / CLOCKS_PER_SEC;
-    }
+int main() { srand(time(NULL)); // To initialize random number generator for Task3.
 
-    printf("Test 1: %f secs\n", avgtime / 50);
-    avgtime = 0;
+    double T1 = TaskCount1(); double T2 = TaskCount2(); double T3 = TaskCount3(); 
+    double T4 = TaskCount4(); double T5 = TaskCount5();
 
-    for (int i = 0; i < 1; i++)
-    {
-        start = clock();
-        test2();
-        end = clock();
-        avgtime += ((double)(end - start)) / CLOCKS_PER_SEC;
-    }
-
-    printf("Test 2: %f secs\n", avgtime / 50);
-    avgtime = 0;
-
-    for (int i = 0; i < 1; i++)
-    {
-        start = clock();
-        test3();
-        end = clock();
-        avgtime += ((double)(end - start)) / CLOCKS_PER_SEC;
-    }
-
-    printf("Test 3: %f secs\n", avgtime / 50);
-    avgtime = 0;
-
-    for (int i = 0; i < 1; i++)
-    {
-        start = clock();
-        test4();
-        end = clock();
-        avgtime += ((double)(end - start)) / CLOCKS_PER_SEC;
-    }
-
-    printf("Test 4: %f secs\n", avgtime / 50);
-
-    return 0;
+    printf("Task 1: Average time taken = %f seconds\n", T1 / TASKSIZE);
+    printf("Task 2: Average time taken = %f seconds\n", T2 / TASKSIZE);
+    printf("Task 3: Average time taken = %f seconds\n", T3 / TASKSIZE);
+    printf("Task 4: Average time taken = %f seconds\n", T4 / TASKSIZE);
+    printf("Task 5: Average time taken = %f seconds\n", T5 / TASKSIZE);
 }

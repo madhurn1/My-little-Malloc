@@ -18,18 +18,6 @@ struct mallocLL *headBlock = (struct mallocLL*) memory;
 
 //mymalloc call status
 //static int checkMalloc= 1; 
-
-// int checkMalloc(){
-//     int checkMalloc; 
-//     if(checkMalloc=0){
-//         return 0;
-//     }
-//     else{
-//         return 1;
-//     }
-// } 
-//status 
-
 // int main(){
 //     return 0; 
 // }
@@ -42,9 +30,9 @@ malloc() function will return pointers to this large array
 */
 void *mymalloc(size_t size, char *file, int line){
     //int checkMalloc= 1; 
-
+    // check_heap(headBlock);
     //if it hasn't been initialized before
-    if (MEMSIZE==4096){
+    if (memory[0]!=0 && (memory[1]!=0)){
         headBlock ->size = MEMSIZE - sizeof(struct mallocLL);
         headBlock -> isFreed = 0;//check this
         headBlock->next = NULL;
@@ -53,7 +41,7 @@ void *mymalloc(size_t size, char *file, int line){
 
     //set equal to the head block
     struct mallocLL *temp = headBlock;
-    // struct mallocLL *prev = NULL;
+    //struct mallocLL *prev = NULL;
     // If the block of memory is bigger than what we need, split it into two blocks.
     while(temp!=NULL){
         if(temp->size >=size && temp->isFreed==0){
@@ -108,12 +96,12 @@ void myfree(void *ptr, char *file, int line){
     //header block to be freed in which we can found by subtracting 1. 
     struct mallocLL *headerB= (struct mallocLL*) ptr-1;
     //checking if already freed or not
-    if(headerB->isFreed){
+    if(headerB->isFreed==0){
         //error -Calling free() a second time on the same pointer. 
         fprintf(stderr, "Error - %s:%d#: Trying to free a second time on the same pointer\n", file, line);
         return;
     }
-    headerB -> isFreed = 1;
+    headerB -> isFreed = 1;//check
     
     //merging adjacent blocks
     //first blocks that come after...
@@ -150,3 +138,23 @@ void memoryLeakage(){
         tempNode = tempNode ->next; 
     }
 }
+
+// void check_heap(struct mallocLL *headBlock) {
+//     struct mallocLL *current = headBlock;
+//     int total_blocks = 0;
+//     int total_allocated = 0;
+    
+//     while (current != NULL) {
+//         total_blocks++;
+//         if (!current->isFreed) {
+//             total_allocated += current->size;
+//             printf("Block at %p of size %lu is allocated\n", (void *)current, current->size);
+//         } else {
+//             printf("Block at %p of size %lu is freed\n", (void *)current, current->size);
+//         }
+//         current = current->next;
+//     }
+    
+//     printf("Total number of blocks: %d\n", total_blocks);
+//     printf("Total memory allocated: %d\n", total_allocated);
+// }
