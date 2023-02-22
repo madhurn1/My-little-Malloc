@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <unistd.h>
+//remove it later... 
+#include "mymalloc.c"
 
 /********************************************************************************************************************/
 
@@ -24,16 +26,26 @@
 
 double TaskCount1() { // To malloc() and immediately free() a 1-byte chunk, 120 times, repeated for 50 cycles.
     void *ptr; struct timeval start, end; double TotalTime = 0.0;
-
-    for (int i = 0; i < TASKSIZE; i++) {
+    
+    for (int i = 0; i < 1; i++) {
         gettimeofday(&start, NULL);
 
-        for (int j = 0; j < NUMTIMES; j++) { ptr = malloc(1); free(ptr); }
+        for (int j = 0; j < 1; j++) { 
+            ptr = malloc(1); 
+            free(ptr); 
+        }
 
         gettimeofday(&end, NULL); // Now, calculating the total time taken do perform the task in seconds.
         TotalTime += (double)(end.tv_sec - start.tv_sec) + ((double)(end.tv_usec - start.tv_usec) / 1000000.0);
     
-    } return TotalTime;
+    } 
+
+    // for(int i =0; i<30;i++){
+    // printf("Index : %d, Value: %c", i, memory[i]);
+    // }
+    // printf("\n");
+        
+    return TotalTime;
 }
 
 /********************************************************************************************************************/
@@ -137,7 +149,8 @@ responds to irregular variations in memory space. */
 
 int main() { srand(time(NULL)); // To initialize random number generator for Task3.
 
-    double T1 = TaskCount1(); double T2 = TaskCount2(); double T3 = TaskCount3(); 
+    double T1 = TaskCount1(); 
+    double T2 = TaskCount2(); double T3 = TaskCount3(); 
     double T4 = TaskCount4(); double T5 = TaskCount5();
 
     printf("Task 1: Average time taken = %f seconds\n", T1 / TASKSIZE);

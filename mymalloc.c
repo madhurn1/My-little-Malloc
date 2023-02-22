@@ -10,6 +10,7 @@ static char memory[MEMSIZE];
 struct mallocLL{
     size_t size;
     int isFreed;// indicated whether the block has been freed or not. 
+    // int checkMalloc; 
     struct mallocLL *next; //linked list data structure. 
 };
 
@@ -32,10 +33,12 @@ void *mymalloc(size_t size, char *file, int line){
     //int checkMalloc= 1; 
     // check_heap(headBlock);
     //if it hasn't been initialized before
-    if (memory[0]==0 && (memory[1]==0)){
+    if (memory[0]==0){
         headBlock ->size = MEMSIZE - sizeof(struct mallocLL);
         headBlock -> isFreed = 0;//check this
         headBlock->next = NULL;
+        // headBlock ->checkMalloc=1;
+        memory[0]=1;
         //checkMalloc = 0;
     }
 
@@ -98,7 +101,7 @@ void myfree(void *ptr, char *file, int line){
     //header block to be freed in which we can found by subtracting 1. 
     struct mallocLL *headerB= (struct mallocLL*) ptr-1;
     //checking if already freed or not
-    if(headerB->isFreed==0){
+    if(headerB->isFreed==1){
         //error -Calling free() a second time on the same pointer. 0
         fprintf(stderr, "Error - %s:%d#: Trying to free a second time on the same pointer\n", file, line);
         return;
@@ -107,6 +110,10 @@ void myfree(void *ptr, char *file, int line){
     
     //merging adjacent blocks
     //first blocks that come after...
+    struct mallocLL *node = headBlock;
+    
+    while (node != NULL) {
+
     if(headerB->next && headerB->next->isFreed){
         headerB->size += sizeof(struct mallocLL) + headerB->next->size; 
         headerB->next = headerB->next->next; 
@@ -120,11 +127,13 @@ backward direction. It checks if the previous block before the current block is
  block is freed in the middle of the memory pool, as it allows the freed block to be 
 combined with the adjacent free blocks on either side of it.
 */
-    if(headerB!=headBlock && headerB->isFreed && ((char*)headerB-sizeof(struct mallocLL)-(char*)headBlock == headBlock->size)){
+    else if(headerB!=headBlock && headerB->isFreed && ((char*)headerB-sizeof(struct mallocLL)-(char*)headBlock == headBlock->size)){
         
         headBlock->size +=sizeof(struct mallocLL)+headerB->size;
 
         headBlock = (struct mallocLL*)((char*)headerB-sizeof(struct mallocLL));
+    }
+    node = node->next;  
     }
 }
 
