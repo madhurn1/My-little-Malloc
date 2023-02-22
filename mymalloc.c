@@ -32,7 +32,7 @@ void *mymalloc(size_t size, char *file, int line){
     //int checkMalloc= 1; 
     // check_heap(headBlock);
     //if it hasn't been initialized before
-    if (memory[0]!=0 && (memory[1]!=0)){
+    if (memory[0]==0 && (memory[1]==0)){
         headBlock ->size = MEMSIZE - sizeof(struct mallocLL);
         headBlock -> isFreed = 0;//check this
         headBlock->next = NULL;
@@ -87,17 +87,19 @@ can be reclaimed and used for other purposes.
 */
 void myfree(void *ptr, char *file, int line){
     //preliminary check the pointer's value... 
+    printf("Test1");
     if (ptr==NULL){
         //error statement unitialized memory
         fprintf(stderr,"Error - %s:%d#: free uninitialized memory\n", file, line);
         return; 
     }
+        printf("test");
 
     //header block to be freed in which we can found by subtracting 1. 
     struct mallocLL *headerB= (struct mallocLL*) ptr-1;
     //checking if already freed or not
     if(headerB->isFreed==0){
-        //error -Calling free() a second time on the same pointer. 
+        //error -Calling free() a second time on the same pointer. 0
         fprintf(stderr, "Error - %s:%d#: Trying to free a second time on the same pointer\n", file, line);
         return;
     }
