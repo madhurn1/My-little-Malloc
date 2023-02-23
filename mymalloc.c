@@ -35,6 +35,11 @@ void *mymalloc(size_t size, char *file, int line){
     //if it hasn't been initialized before
     printf("head block size %ld\n",headBlock->size);
     
+    if(size==0){
+    fprintf(stderr,"Error - %s:%d#: Requested a size of 0 bytes. Invalid request\n", file, line);
+    return NULL;
+    } 
+
     if (headBlock->size==0){
         headBlock ->size = MEMSIZE - sizeof(struct mallocLL);
         headBlock -> isFreed = 0;//check this
@@ -86,7 +91,7 @@ void *mymalloc(size_t size, char *file, int line){
             // prev = temp;    
             temp = temp->next;
     }
-    //fprintf(stderr,"Error - %s:%d#: Not enough Memory\n", file, line);
+    fprintf(stderr,"Error - %s:%d#: Not enough Memory\n", file, line);
     return NULL;
 }
 

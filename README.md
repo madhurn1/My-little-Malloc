@@ -1,15 +1,29 @@
 # My-little-Malloc
 Amani Islam - ai326
-Madhur Nut - mn
+Madhur Nutulapati - mn712
 
+Overall Strategy + Logic: 
+We used a linked list implementation to provide similar functionality as the standard library functions malloc() and free(). We used this implementation because we can keep track of the allocated and free chunks of memory where each node of the data structure represents a chunk of memory and contains metadata(size of chunk & flag giving information on whether it's been freed or not). Our structure for the linked list has 3 main functions size, isFreed flag, and a next function, which allows us to move through each chunk of memory.   
+ 
 mymalloc():
--
+First,  we declare a pointer called "headBlock" that points to the beginning of the memory array, ensuring that metadata is stored at the beginning of the memory region. The advantage of this pointer is that we can easily keep track of the metadata for each chunk being allocated. Next, we check to ensure the "headBlock" hasn't been initalized before and split the memory into two chunks. One chunk is the number of bytes being requested by the client, and the other chunk is the remaining bytes in the heap. While this is happening, it will create a new header for the other chunk that is not being used, updates the isFreed property, and, most importantly, returns the pointer to the beginning of the memory block(excluding the header). 
+
+
+Correctness Testing - 
 
 myfree(): 
+After retrieving the pointer to the block of memory that needs to be freed for the client, we run a few error conditions to eliminate freeing issues.
 
-strategy for coalescing - Eager Coalesing - Any time we free a chunk, we coalesce with any free neighbors there are never adjacent free chunks. 
+Edge cases: 
+1. First checks if ptr equals to NULL which is essentially frees unitialized memory. 
+2. if our headerblook is already freed and is trying to be freed again will throw an error. Because a pointer can't be freed twice. 
 
-How did we test to see if our eager coalesing works? ...
+
+Strategy for coalescing - Eager coalescing- Any time we free a chunk, we merge with any free neighbors, so there are never adjacent free chunks. First, we check if the next block after the current block is being freed considering it, we merge both blocks two adjacent blocks into a single block. 
+
+Correctness Testing for Coalescing - 
+
+Corectness Testing for Free - 
 
 Tests:
     - test1(): For a total of 120 times, allocates a 1 byte chunk and immeadiately after frees said chunk
