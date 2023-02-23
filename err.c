@@ -16,6 +16,7 @@ int main(int argc, char **argv)
     
     case 1:
         free(&x);
+        //
         break;
 
     case 2:

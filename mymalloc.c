@@ -33,12 +33,15 @@ void *mymalloc(size_t size, char *file, int line){
     //int checkMalloc= 1; 
     // check_heap(headBlock);
     //if it hasn't been initialized before
-    if (memory[0]==0){
+    printf("head block size %ld\n",headBlock->size);
+    
+    if (headBlock->size==0){
         headBlock ->size = MEMSIZE - sizeof(struct mallocLL);
         headBlock -> isFreed = 0;//check this
         headBlock->next = NULL;
+        printf("right here %ld\n", headBlock->size);
+
         // headBlock ->checkMalloc=1;
-        memory[0]=1;
         //checkMalloc = 0;
     }
 
@@ -47,8 +50,13 @@ void *mymalloc(size_t size, char *file, int line){
     //struct mallocLL *prev = NULL;
     // If the block of memory is bigger than what we need, split it into two blocks.
     while(temp!=NULL){
+        printf("temp size : %ld\n",temp->size);
+        printf("isFreed value: %d\n",temp->isFreed);
+
         if(temp->size >=size && temp->isFreed==0){
+            printf("1 passed if statements\n");
             if (temp->size >= size + sizeof(struct mallocLL)) {
+                printf("passed if statements\n");
                 /*This line of code is creating a new header for the free chunk that remains after 
                 the requested memory has been allocated
                 which allows us to properly track this chunk and use it in future allocations.
@@ -61,7 +69,7 @@ void *mymalloc(size_t size, char *file, int line){
 
                 //initalize the characteristics
                 newChunk ->isFreed=1;
-                
+               
                 //point to the next linklist element
                 newChunk->next = temp->next;
 
@@ -115,8 +123,11 @@ void myfree(void *ptr, char *file, int line){
     while (node != NULL) {
 
     if(headerB->next && headerB->next->isFreed){
+        printf(" requested size %ld\n",headerB->size);
         headerB->size += sizeof(struct mallocLL) + headerB->next->size; 
+        // printf("%ld\n",headerB->next->size);
         headerB->next = headerB->next->next; 
+        printf("colesce one %ld\n", headBlock->size);
     }
 
     //previous block is free, merge both blocks...
@@ -132,40 +143,23 @@ combined with the adjacent free blocks on either side of it.
         headBlock->size +=sizeof(struct mallocLL)+headerB->size;
 
         headBlock = (struct mallocLL*)((char*)headerB-sizeof(struct mallocLL));
+        printf("colesce two %ld\n", headBlock->size);
+
     }
     node = node->next;  
     }
+    headerB->isFreed=0;
 }
 
 //memory leak error catch
 
-void memoryLeakage(){
-    struct mallocLL *tempNode = headBlock;
-    while(tempNode!=NULL){
-        //if 
-        if(!tempNode->isFreed){
-        fprintf(stderr, "Error at address %p and  size of %zu\n: Memory Leakage \n",(void*)(tempNode + 1),tempNode->size );
-        }
-        tempNode = tempNode ->next; 
-    }
-}
-
-// void check_heap(struct mallocLL *headBlock) {
-//     struct mallocLL *current = headBlock;
-//     int total_blocks = 0;
-//     int total_allocated = 0;
-    
-//     while (current != NULL) {
-//         total_blocks++;
-//         if (!current->isFreed) {
-//             total_allocated += current->size;
-//             printf("Block at %p of size %lu is allocated\n", (void *)current, current->size);
-//         } else {
-//             printf("Block at %p of size %lu is freed\n", (void *)current, current->size);
+// void memoryLeakage(){
+//     struct mallocLL *tempNode = headBlock;
+//     while(tempNode!=NULL){
+//         //if 
+//         if(!tempNode->isFreed){
+//         fprintf(stderr, "Error at address %p and  size of %zu\n: Memory Leakage \n",(void*)(tempNode + 1),tempNode->size );
 //         }
-//         current = current->next;
+//         tempNode = tempNode ->next; 
 //     }
-    
-//     printf("Total number of blocks: %d\n", total_blocks);
-//     printf("Total memory allocated: %d\n", total_allocated);
 // }

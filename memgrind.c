@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include <unistd.h>
 //remove it later... 
-#include "mymalloc.c"
+// #include "mymalloc.c"
 
 /********************************************************************************************************************/
 
@@ -19,20 +19,21 @@
 
 /********************************************************************************************************************/
 
-#define TASKSIZE 50 // Defined to run each task 50 times everytime any task is called.
-#define NUMTIMES 120 // To operate malloc and free functions 120 times on given task.
+#define TASKSIZE 1 // Defined to run each task 50 times everytime any task is called.
+#define NUMTIMES 5 // To operate malloc and free functions 120 times on given task.
 
 /********************************************************************************************************************/
 
 double TaskCount1() { // To malloc() and immediately free() a 1-byte chunk, 120 times, repeated for 50 cycles.
     void *ptr; struct timeval start, end; double TotalTime = 0.0;
     
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 50; i++) {
         gettimeofday(&start, NULL);
 
-        for (int j = 0; j < 1; j++) { 
+        for (int j = 0; j < 120; j++) { 
             ptr = malloc(1); 
             free(ptr); 
+            printf("\n");
         }
 
         gettimeofday(&end, NULL); // Now, calculating the total time taken do perform the task in seconds.
@@ -40,10 +41,6 @@ double TaskCount1() { // To malloc() and immediately free() a 1-byte chunk, 120 
     
     } 
 
-    // for(int i =0; i<30;i++){
-    // printf("Index : %d, Value: %c", i, memory[i]);
-    // }
-    // printf("\n");
         
     return TotalTime;
 }
@@ -54,11 +51,17 @@ double TaskCount2() { /* To use malloc() to get 120 1-byte chunks, storing the p
                        to deallocate the chunks. */
     void *ptr[NUMTIMES]; struct timeval start, end; double TotalTime = 0.0;
 
-    for (int i = 0; i < TASKSIZE; i++) {
+    for (int i = 0; i < 1; i++) {
         gettimeofday(&start, NULL);
 
-        for (int j = 0; j < NUMTIMES; j++) { ptr[j] = malloc(1); }
-        for (int j = 0; j < NUMTIMES; j++) { free(ptr[j]); }
+        for (int j = 0; j < 5; j++) { 
+            ptr[j] = malloc(1); 
+            printf("\n");
+        }
+        for (int j = 0; j < 5; j++) {
+            free(ptr[j]); 
+            printf("\n");
+        }
 
         gettimeofday(&end, NULL); // Now, calculating the total time taken do perform the task in seconds.
         TotalTime += (double)(end.tv_sec - start.tv_sec) + ((double)(end.tv_usec - start.tv_usec) / 1000000.0);
@@ -72,12 +75,12 @@ double TaskCount3() { /* Randomly choose between one of the following tasks to b
                         • Allocating a 1-byte chunk and storing the pointer in an array.
                         • Deallocating one of the chunks in the array (if any). 
     Repeat until you have called malloc() 120 times, then free all of the remaining allocated chunks in the array. */
-    void *ptr[NUMTIMES]; int ChunksAllocated = 0; struct timeval start, end; double TotalTime = 0.0;
+    void *ptr[5]; int ChunksAllocated = 0; struct timeval start, end; double TotalTime = 0.0;
 
-    for (int i = 0; i < TASKSIZE; i++) {
+    for (int i = 0; i < 1; i++) {
         gettimeofday(&start, NULL);
 
-        for (int j = 0; j < NUMTIMES; j++) {
+        for (int j = 0; j < 5; j++) {
 
             if (ChunksAllocated == 0 || (rand() % 2 == 0 && ChunksAllocated < NUMTIMES)) {
                 ptr[ChunksAllocated] = malloc(1); ChunksAllocated++;
@@ -149,13 +152,15 @@ responds to irregular variations in memory space. */
 
 int main() { srand(time(NULL)); // To initialize random number generator for Task3.
 
-    double T1 = TaskCount1(); 
-    double T2 = TaskCount2(); double T3 = TaskCount3(); 
-    double T4 = TaskCount4(); double T5 = TaskCount5();
+    //double T1 = TaskCount1(); 
+    //double T2 = TaskCount2(); 
+    //double T3 = TaskCount3(); 
+    //double T4 = TaskCount4(); 
+    double T5 = TaskCount5();
 
-    printf("Task 1: Average time taken = %f seconds\n", T1 / TASKSIZE);
-    printf("Task 2: Average time taken = %f seconds\n", T2 / TASKSIZE);
-    printf("Task 3: Average time taken = %f seconds\n", T3 / TASKSIZE);
-    printf("Task 4: Average time taken = %f seconds\n", T4 / TASKSIZE);
+    //printf("Task 1: Average time taken = %f seconds\n", T1 / TASKSIZE);
+    //printf("Task 2: Average time taken = %f seconds\n", T2 / TASKSIZE);
+    //printf("Task 3: Average time taken = %f seconds\n", T3 / TASKSIZE);
+    //printf("Task 4: Average time taken = %f seconds\n", T4 / TASKSIZE);
     printf("Task 5: Average time taken = %f seconds\n", T5 / TASKSIZE);
 }

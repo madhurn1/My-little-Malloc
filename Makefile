@@ -1,10 +1,17 @@
-TARGET = memgrind
-INCLUDE = mymalloc
-CC     = gcc
-CFLAGS = -g -std=c99 -Wall -Wvla -Werror -fsanitize=address,undefined
+CC = gcc -Wall -Werror -fsanitize=address
+RM = rm -f
+MEMGRIND = err
+OBJECTS = err.o mymalloc.o
 
-$(TARGET): $(TARGET).c
-	$(CC) $(CFLAGS) -o $@ $^
 
-clean: 
-	rm -rf $(TARGET) .o.a .dylib.dSYM
+$(MEMGRIND): $(OBJECTS)
+	$(CC) $(OBJECTS) -o $(MEMGRIND)
+
+memgrind.o: err.c mymalloc.h
+	$(CC) -c err.c
+
+mymalloc.o: mymalloc.c mymalloc.h
+	$(CC) -c mymalloc.c
+
+clean:
+	$(RM) $(MEMGRIND) $(OBJECTS)
