@@ -127,4 +127,8 @@ int main()
     printf("Test 3 Avg Time: %f secs\n", test3() / 50);
     printf("Test 4 Avg Time: %f secs\n", test4() / 50);
     printf("Test 5 Avg Time: %f secs\n", test5() / 50);
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 04491968ccc69015d5482da7b2f06df3ab618c13
