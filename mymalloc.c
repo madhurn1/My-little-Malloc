@@ -10,19 +10,11 @@ static char memory[MEMSIZE];
 struct mallocLL{
     size_t size;
     int isFreed;// indicated whether the block has been freed or not. 
-    // int checkMalloc; 
     struct mallocLL *next; //linked list data structure. 
 };
 
 //to point to the beginning of the memory array.
 struct mallocLL *headBlock = (struct mallocLL*) memory;
-
-//mymalloc call status
-//static int checkMalloc= 1; 
-// int main(){
-//     return 0; 
-// }
-//test
 
 /*malloc(size_t size) is a system library function that returns a pointer to a block of 
 memory of at least the requested size. This memory comes from a main memory resource managed
@@ -30,21 +22,21 @@ by the operating system.
 malloc() function will return pointers to this large array
 */
 void *mymalloc(size_t size, char *file, int line){
-    //int checkMalloc= 1; 
-    // check_heap(headBlock);
+  
     //if it hasn't been initialized before
-    printf("head block size %ld\n",headBlock->size);
-    
     if(size==0){
     fprintf(stderr,"Error - %s:%d#: Requested a size of 0 bytes. Invalid request\n", file, line);
     return NULL;
     } 
 
+    while(headBlock->next!=NULL){
+        headBlock = headBlock->next;
+    }
+
     if (headBlock->size==0){
         headBlock ->size = MEMSIZE - sizeof(struct mallocLL);
-        headBlock -> isFreed = 0;//check this
+        headBlock -> isFreed = 1;
         headBlock->next = NULL;
-        printf("right here %ld\n", headBlock->size);
 
         // headBlock ->checkMalloc=1;
         //checkMalloc = 0;
@@ -52,16 +44,11 @@ void *mymalloc(size_t size, char *file, int line){
 
     //set equal to the head block
     struct mallocLL *temp = headBlock;
-    //struct mallocLL *prev = NULL;
     // If the block of memory is bigger than what we need, split it into two blocks.
     while(temp!=NULL){
-        printf("temp size : %ld\n",temp->size);
-        printf("isFreed value: %d\n",temp->isFreed);
+        if(temp->size >=size && temp->isFreed==1){
 
-        if(temp->size >=size && temp->isFreed==0){
-            printf("1 passed if statements\n");
             if (temp->size >= size + sizeof(struct mallocLL)) {
-                printf("passed if statements\n");
                 /*This line of code is creating a new header for the free chunk that remains after 
                 the requested memory has been allocated
                 which allows us to properly track this chunk and use it in future allocations.
@@ -71,7 +58,7 @@ void *mymalloc(size_t size, char *file, int line){
                 minus the size of the header that will be used for the new allocated chunk.
                 */
                 newChunk -> size = temp->size - sizeof(struct mallocLL) - size;
-
+                
                 //initalize the characteristics
                 newChunk ->isFreed=1;
                
@@ -82,8 +69,9 @@ void *mymalloc(size_t size, char *file, int line){
 
                 temp->size = size;
                 
+
                 temp->next = newChunk; 
-            }   
+            }
                 temp->isFreed= 0;
                 
                 return (void*)((char*)temp + sizeof(struct mallocLL)); //valid
@@ -103,37 +91,45 @@ can be reclaimed and used for other purposes.
 */
 void myfree(void *ptr, char *file, int line){
     //preliminary check the pointer's value... 
-    // printf("Test1");
+
+
     if (ptr==NULL){
         //error statement unitialized memory
         fprintf(stderr,"Error - %s:%d#: free uninitialized memory\n", file, line);
         return; 
     }
-        // printf("test");
+
+    
 
     //header block to be freed in which we can found by subtracting 1. 
     struct mallocLL *headerB= (struct mallocLL*) ptr-1;
     //checking if already freed or not
+    
+
+    
     if(headerB->isFreed==1){
         //error -Calling free() a second time on the same pointer. 0
         fprintf(stderr, "Error - %s:%d#: Trying to free a second time on the same pointer\n", file, line);
         return;
     }
     headerB -> isFreed = 1;//check
+    // headerB -> next->isFreed = 1;
     
     //merging adjacent blocks
     //first blocks that come after...
     struct mallocLL *node = headBlock;
     
     while (node != NULL) {
+    // printf("head block size %ld\n",headerB->size);
+    // headerB -> next->isFreed = 1;
 
-    if(headerB->next && headerB->next->isFreed){
-        printf(" requested size %ld\n",headerB->size);
+
+    if(headerB->next != NULL && headerB->next->isFreed==1){
         headerB->size += sizeof(struct mallocLL) + headerB->next->size; 
         // printf("%ld\n",headerB->next->size);
         headerB->next = headerB->next->next; 
-        printf("colesce one %ld\n", headBlock->size);
     }
+
 
     //previous block is free, merge both blocks...
 
@@ -148,23 +144,7 @@ combined with the adjacent free blocks on either side of it.
         headBlock->size +=sizeof(struct mallocLL)+headerB->size;
 
         headBlock = (struct mallocLL*)((char*)headerB-sizeof(struct mallocLL));
-        printf("colesce two %ld\n", headBlock->size);
-
     }
     node = node->next;  
     }
-    headerB->isFreed=0;
 }
-
-//memory leak error catch
-
-// void memoryLeakage(){
-//     struct mallocLL *tempNode = headBlock;
-//     while(tempNode!=NULL){
-//         //if 
-//         if(!tempNode->isFreed){
-//         fprintf(stderr, "Error at address %p and  size of %zu\n: Memory Leakage \n",(void*)(tempNode + 1),tempNode->size );
-//         }
-//         tempNode = tempNode ->next; 
-//     }
-// }
