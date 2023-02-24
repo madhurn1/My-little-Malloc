@@ -1,11 +1,7 @@
 #include <stdlib.h>
-#include <stddef.h>
-#include <unistd.h>
 #include <stdio.h>
-#include <sys/time.h>
 #include <time.h>
 #include "mymalloc.h"
-#include <string.h>
 
 double test1()
 {
@@ -117,7 +113,37 @@ double test4()
 
 double test5()
 {
-    return 0;
+    void *ptr[120];
+    int mallocs = 0;
+    clock_t start, end;
+    double time = 0;
+
+    for (int i = 0; i < 50; i++)
+    {
+        start = clock();
+        for (int j = 0; j < 120; j++)
+        {
+            if (mallocs < 10)
+            {
+                ptr[mallocs] = malloc(64);
+                mallocs++;
+            }
+            else
+            {
+                for (int k = 0; k < mallocs; k++)
+                    free(ptr[k]);
+
+                mallocs = 0;
+            }
+        }
+
+        for (int j = 0; j < mallocs; j++)
+            free(ptr[j]);
+
+        end = clock();
+        time += ((double)(end - start)) / CLOCKS_PER_SEC;
+    }
+    return time;
 }
 
 int main()
